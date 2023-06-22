@@ -32,7 +32,7 @@ class State(BaseModel, Base):
             with `state_id` equals to the current
             """
 
-            cities = list()
+            cities = []
 
             for _id, city in models.storage.all(City).items():
                 if city.state_id == self.id:

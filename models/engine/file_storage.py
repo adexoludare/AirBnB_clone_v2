@@ -1,7 +1,5 @@
 #!/usr/bin/python3
-"""
-This is the file storage class for AirBnB
-"""
+"""This is the file storage class for AirBnB"""
 import json
 from models.base_model import BaseModel
 from models.user import User
@@ -23,19 +21,23 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-        """returns a dictionary
-        Return:
-            returns a dictionary of __object
+        """Returns all the objects
+
+        If a class is specified, the method only
+        returns the objects of same type.
+
         """
-        if not cls:
-            return self.__objects
-        else:
-            dic_res = {}
-            for key, val in self.__objects.items():
-                name = key.split('.')
-                if name[0] == cls.__name__:
-                    dic_res.update({key: val})
-            return (dic_res)
+
+        if cls:
+            same_type = dict()
+
+            for key, obj in self.__objects.items():
+                if obj.__class__ == cls:
+                    same_type[key] = obj
+
+            return (same_type)
+
+        return (self.__objects)
 
     def new(self, obj):
         """sets __object to given obj
@@ -52,14 +54,14 @@ class FileStorage:
         my_dict = {}
         for key, value in self.__objects.items():
             my_dict[key] = value.to_dict()
-        with open(self.__file_path, mode='w', encoding="UTF-8") as fd:
-            json.dump(my_dict, fd)
+        with open(self.__file_path, 'w', encoding="UTF-8") as f:
+            json.dump(my_dict, f)
 
     def reload(self):
         """serialize the file path to JSON file path
         """
         try:
-            with open(self.__file_path, mode='r', encoding="UTF-8") as f:
+            with open(self.__file_path, 'r', encoding="UTF-8") as f:
                 for key, value in (json.load(f)).items():
                     value = eval(value["__class__"])(**value)
                     self.__objects[key] = value
@@ -67,17 +69,16 @@ class FileStorage:
             pass
 
     def delete(self, obj=None):
-        """delete obj from __objects if it's inside"""
+        """Delete obj from __objects if it's inside
+        """
         if obj:
-            for key in self.__objects:
-                idn = key.split('.')
-                if obj.id == idn[1]:
-                    del self.__objects[key]
-                    break
-            self.save()
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+
+            if self.__objects[key]:
+                del self.__objects[key]
+                self.save()
 
     def close(self):
-        """
-        Calls reload() method for deserializing the JSON file to objects
+        """Deserialize the JSON file to objects
         """
         self.reload()
